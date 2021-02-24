@@ -7,10 +7,10 @@ export default class GameMain extends cc.Component {
     camera_3d: cc.Camera = null;
 
     @property({ type: cc.Button, tooltip: '开始游戏按钮' })
-    btn_startGame: cc.Button;
+    btn_startGame: cc.Button = null;
 
     @property({ type: cc.Canvas, tooltip: '游戏面板' })
-    canvas: cc.Canvas;
+    canvas: cc.Canvas = null;
 
     private menuScene: cc.Node;
     private gameScene: cc.Node;
@@ -18,8 +18,8 @@ export default class GameMain extends cc.Component {
     onLoad() {
         this.menuScene = this.canvas.node.getChildByName("Menu");
         this.gameScene = this.canvas.node.getChildByName("Game");
-        this.gameScene.active = false;
-        this.menuScene.active = true;
+        this.gameScene.active = true;
+        this.menuScene.active = false;
     }
 
     /**点击开始按钮 */
@@ -33,7 +33,5 @@ export default class GameMain extends cc.Component {
             .to(0.6, { scale: this.canvas.node.scale, opacity: this.canvas.node.opacity })
             .start()
     }
-
-
 
 }

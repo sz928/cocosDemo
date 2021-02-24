@@ -1,3 +1,5 @@
+import Config from "./Config";
+
 const { ccclass, property } = cc._decorator;
 @ccclass('游戏场景')
 export default class GameScene extends cc.Component {
@@ -7,25 +9,46 @@ export default class GameScene extends cc.Component {
 
     onLoad() {
         this.drawNode = new cc.Node();
-        this.drawNode.anchorX = this.drawNode.anchorY = 0.5;
         this.node.addChild(this.drawNode);
         this.draw = this.drawNode.addComponent(cc.Graphics);
-        this.draw.lineWidth = 5;
-        // this.drawNode.addComponent(cc.Widget);
+        let widget = this.drawNode.addComponent(cc.Widget);
+        this.drawNode.setContentSize(this.node.getContentSize());
+        widget.target = this.node;
+        widget.top = widget.bottom = widget.left = widget.right = 0;
+        this.draw.lineWidth = 3;
     }
 
     start() {
         this.draw.strokeColor = cc.Color.WHITE;
-        for (let i = 0; i < 10; i++) {
-            let startX = i * 60;
-            this.draw.moveTo(startX, 0);
-            this.draw.lineTo(startX, 600);
-            this.draw.stroke();
 
-            let startY = i * 60;
-            this.draw.moveTo(0, startY);
-            this.draw.lineTo(600, startY);
+        for (let i = 0; i < Config.cardLine; i++) {
+            let max = Config.cardSize * Config.cardLine;
+            let startX = i * Config.cardSize;
+            this.draw.moveTo(startX, 0);
+            this.draw.lineTo(startX, max);
             this.draw.stroke();
         }
+        for (let i = 0; i < Config.cardRow; i++) {
+            let max = Config.cardSize * Config.cardRow;
+            let startY = i * Config.cardSize;
+            this.draw.moveTo(0, startY);
+            this.draw.lineTo(max, startY);
+            this.draw.stroke();
+        }
+
+        // for (let i = 0; i < Config.cardLine; i++) {
+        //     let max = Config.cardSize * Config.cardLine;
+        //     let startX = (i - Config.cardLine / 2) * Config.cardSize;
+        //     this.draw.moveTo(startX, 0);
+        //     this.draw.lineTo(startX, max);
+        //     this.draw.stroke();
+        // }
+        // for (let i = 0; i < Config.cardRow; i++) {
+        //     let max = Config.cardSize * Config.cardRow;
+        //     let startY = (Config.cardRow / 2 -i) * Config.cardSize;
+        //     this.draw.moveTo(0, startY);
+        //     this.draw.lineTo(max, startY);
+        //     this.draw.stroke();
+        // }
     }
 }
