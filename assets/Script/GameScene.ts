@@ -8,47 +8,51 @@ export default class GameScene extends cc.Component {
     private draw: cc.Graphics;
 
     onLoad() {
-        this.drawNode = new cc.Node();
-        this.node.addChild(this.drawNode);
-        this.draw = this.drawNode.addComponent(cc.Graphics);
-        let widget = this.drawNode.addComponent(cc.Widget);
-        this.drawNode.setContentSize(this.node.getContentSize());
-        widget.target = this.node;
-        widget.top = widget.bottom = widget.left = widget.right = 0;
-        this.draw.lineWidth = 3;
+        this.drawNode = this.node.getChildByName('backgroud');
+        this.draw = this.drawNode.getComponent(cc.Graphics);
     }
 
     start() {
         this.draw.strokeColor = cc.Color.WHITE;
 
-        for (let i = 0; i < Config.cardLine; i++) {
-            let max = Config.cardSize * Config.cardLine;
-            let startX = i * Config.cardSize;
-            this.draw.moveTo(startX, 0);
-            this.draw.lineTo(startX, max);
-            this.draw.stroke();
-        }
-        for (let i = 0; i < Config.cardRow; i++) {
-            let max = Config.cardSize * Config.cardRow;
-            let startY = i * Config.cardSize;
-            this.draw.moveTo(0, startY);
-            this.draw.lineTo(max, startY);
+        let maxW = Config.cubeSize * (Config.cubeLine - 1);
+        let maxH = Config.cubeSize * (Config.cubeRow - 1);
+        for (let i = 0; i < Config.cubeLine; i++) {
+            let startX = i * Config.cubeSize - maxW / 2;
+            this.draw.moveTo(startX, -maxH / 2);
+            this.draw.lineTo(startX, maxH / 2);
             this.draw.stroke();
         }
 
-        // for (let i = 0; i < Config.cardLine; i++) {
-        //     let max = Config.cardSize * Config.cardLine;
-        //     let startX = (i - Config.cardLine / 2) * Config.cardSize;
-        //     this.draw.moveTo(startX, 0);
-        //     this.draw.lineTo(startX, max);
-        //     this.draw.stroke();
-        // }
-        // for (let i = 0; i < Config.cardRow; i++) {
-        //     let max = Config.cardSize * Config.cardRow;
-        //     let startY = (Config.cardRow / 2 -i) * Config.cardSize;
-        //     this.draw.moveTo(0, startY);
-        //     this.draw.lineTo(max, startY);
-        //     this.draw.stroke();
-        // }
+        for (let i = 0; i < Config.cubeRow; i++) {
+            let startY = i * Config.cubeSize - maxH / 2;
+            this.draw.moveTo(-maxW / 2, startY);
+            this.draw.lineTo(maxW / 2, startY);
+            this.draw.stroke();
+        }
+
+        this.drawNode.y = 150;
+    }
+
+    /**创建一个下落的方块 */
+    private createCube() {
+        let index = Math.floor(Math.random() * 5);
+        
+    }
+
+    onBtnLeft() {
+
+    }
+    onBtnRight() {
+
+    }
+    onBtnUp() {
+
+    }
+    onBtnDown() {
+
+    }
+    onChange() {
+
     }
 }

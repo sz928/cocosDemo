@@ -1,3 +1,5 @@
+import DataManager from "./DataManager";
+
 const { ccclass, property } = cc._decorator;
 
 @ccclass('游戏控制器')
@@ -20,6 +22,8 @@ export default class GameMain extends cc.Component {
         this.gameScene = this.canvas.node.getChildByName("Game");
         this.gameScene.active = true;
         this.menuScene.active = false;
+
+        DataManager.instance.init();
     }
 
     /**点击开始按钮 */

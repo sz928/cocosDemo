@@ -1,9 +1,38 @@
-export default class Config {
-    constructor() {}
+import { CubeData } from "./Cube";
 
-    static cardSize = 30;
+export default class Config {
+    constructor() { }
+
+    static cubeSize = 40;
     /**行数 */
-    static cardRow = 10;
+    static cubeRow = 17;
     /**列数 */
-    static cardLine = 10;
+    static cubeLine = 12;
+
+    static cudeType: { x: number, y: number }[][] = [
+        [{ x: -1, y: 0 },
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: -1 }],
+
+        [{ x: -1, y: -1 },
+        { x: -1, y: 0 },
+        { x: 0, y: 0 },
+        { x: 1, y: 0 }],
+
+        [{ x: 0, y: 0 },
+        { x: 0, y: -1 },
+        { x: 1, y: 0 },
+        { x: 1, y: -1 }],
+
+        [{ x: 0, y: 0 },
+        { x: 0, y: -1 },
+        { x: 0, y: -2 },
+        { x: 0, y: -3 }],
+
+        [{ x: -1, y: -1 },
+        { x: 0, y: -1 },
+        { x: 0, y: 0 },
+        { x: 1, y: 0 }]
+    ]
 }
