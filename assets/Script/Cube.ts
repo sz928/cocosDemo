@@ -15,13 +15,25 @@ export default class Cube extends cc.Component {
     }
 
     init(index: number) {
-        // this.index = index;
-        // this.node.y = -200;
-        // this.onBottom = [];
-        // this.speed = 1;
-        // this.pos = [];
+        this.index = index;
+        this.node.x = DataManager.instance.startPoint.x;
+        this.node.y = DataManager.instance.startPoint.y;
+        this.onBottom = [];
+        this.speed = 1;
+        this.pos = [];
 
         let item = Config.cudeType[index];
+        let oneNode: cc.Node;
+        for (let i = 0; i < item.length; i++) {
+            const element = item[i];
+            oneNode = this.node.getChildByName('Splash' + 0);
+            if (!oneNode) {
+                oneNode = new cc.Node();
+                let sprite = oneNode.addComponent(cc.Sprite);
+                sprite.spriteFrame = new cc.SpriteFrame('default_sprite_splash');
+                sprite.sizeMode = cc.Sprite.SizeMode.CUSTOM;
+            }
+        }
 
     }
 
