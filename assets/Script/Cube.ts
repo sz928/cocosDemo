@@ -2,8 +2,9 @@ import Config from "./Config";
 import DataManager from "./DataManager";
 
 const { ccclass, property } = cc._decorator;
-@ccclass()
-export class Cube extends cc.Component {
+
+@ccclass('下落方块组')
+export default class Cube extends cc.Component {
     /**当前方块最下面的坐标 */
     onBottom: cc.Vec2[];
     index: number;
@@ -11,21 +12,16 @@ export class Cube extends cc.Component {
     pos: cc.Vec2[] = [];
 
     onLoad() {
-        // cc.assetManager.preloadAny()
-        //TODO 加载预制体
     }
 
-    init(index: number, start: { x: number, y: number }) {
-        this.index = index;
-        this.node.y = -200;
-        this.onBottom = [];
-        this.speed = 1;
-        this.pos = [];
+    init(index: number) {
+        // this.index = index;
+        // this.node.y = -200;
+        // this.onBottom = [];
+        // this.speed = 1;
+        // this.pos = [];
 
         let item = Config.cudeType[index];
-        var scene = cc.director.getScene();
-        var node = cc.instantiate(cc.Prefab.);
-        node.parent = scene;
 
     }
 
