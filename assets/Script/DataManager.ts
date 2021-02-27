@@ -19,14 +19,12 @@ export default class DataManager {
     init() {
         this.isHasCube = [];
         let maxW = Config.cubeSize * (Config.cubeLine - 1);
-        // let maxH = Config.cubeSize * (Config.cubeRow - 1);
+        let maxH = Config.cubeSize * (Config.cubeRow - 1);
         if (Config.cubeLine % 2 != 0) {
             this.startPoint.x = Config.cubeSize / 2;
-            // } else {
-            //     this.startPoint.x = 0 - Config.cubeSize / 2;
-            // }
         }
-        this.startPoint.y = 300;
-        
+        // this.startPoint.y = maxH / 2 + 4 * Config.cubeSize +  150;
+
+        this.startPoint.y= 0
     }
 }

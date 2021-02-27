@@ -65,7 +65,7 @@ export default class GameManager extends cc.Component {
         let cubeGroup = cc.instantiate(this.cubeGroup);
         this.gameScene.addChild(cubeGroup);
         let script = cubeGroup.getComponent(Cube);
-        script.init(index);
+        script.init(0);
     }
 
     /**点击开始按钮 */

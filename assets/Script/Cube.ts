@@ -33,8 +33,21 @@ export default class Cube extends cc.Component {
                 sprite.spriteFrame = new cc.SpriteFrame('default_sprite_splash');
                 sprite.sizeMode = cc.Sprite.SizeMode.CUSTOM;
             }
+            oneNode.x = element.x * Config.cubeSize;
+            oneNode.y = element.y * Config.cubeSize;
+            oneNode.width = oneNode.height = Config.cubeSize;
+            console.log('节点', i, ':', oneNode.x, oneNode.y);
         }
+    }
 
+    start() {
+        // cc.tween(this.node)
+        //     .repeatForever(
+        //         cc.tween(this.node)
+        //         .delay(1)
+        //         .by(0.5, { y: -Config.cubeSize })
+        //     )
+        //     .start();
     }
 
     /**改变形状 */
