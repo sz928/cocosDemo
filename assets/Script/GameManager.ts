@@ -4,7 +4,7 @@ import DataManager from "./DataManager";
 
 const { ccclass, property } = cc._decorator;
 
-@ccclass('游戏控制器')
+@ccclass
 export default class GameManager extends cc.Component {
 
     @property({ type: cc.Camera, tooltip: '世界相机' })
@@ -25,6 +25,7 @@ export default class GameManager extends cc.Component {
         this.gameScene.active = true;
         this.menuScene.active = false;
 
+        Config.instance.init();
         DataManager.instance.init();
 
         this.iniBg();
@@ -56,7 +57,7 @@ export default class GameManager extends cc.Component {
             draw.lineTo(maxW / 2, startY);
             draw.stroke();
         }
-        drawNode.y = 150;
+        drawNode.y = DataManager.instance.allMove;
     }
 
     /**创建一个下落的方块 */
