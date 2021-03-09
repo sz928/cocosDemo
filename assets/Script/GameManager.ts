@@ -19,6 +19,8 @@ export default class GameManager extends cc.Component {
     private menuScene: cc.Node;
     private gameScene: cc.Node;
 
+    private cubeScript: Cube;
+
     onLoad() {
         this.menuScene = this.canvas.node.getChildByName("Menu");
         this.gameScene = this.canvas.node.getChildByName("Game");
@@ -65,8 +67,8 @@ export default class GameManager extends cc.Component {
         let index = Math.floor(Math.random() * 5);
         let cubeGroup = cc.instantiate(this.cubeGroup);
         this.gameScene.addChild(cubeGroup);
-        let script = cubeGroup.getComponent(Cube);
-        script.init(0);
+        this.cubeScript = cubeGroup.getComponent(Cube);
+        this.cubeScript.init(0);
     }
 
     /**点击开始按钮 */
@@ -88,7 +90,7 @@ export default class GameManager extends cc.Component {
 
     }
     onChange() {
-
+        this.cubeScript.change();
     }
 
 }

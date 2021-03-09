@@ -6,7 +6,7 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class Cube extends cc.Component {
     /**当前方块最下面的坐标 */
-    onBottom: cc.Vec2[];
+    onBottom: CubeData[];
     /**哪个类型的方块 */
     index: number;
     speed: number = 1;
@@ -79,6 +79,10 @@ export default class Cube extends cc.Component {
         this.setCube();
         console.log('发生改变', this.index, this.nowState);
 
+        for (const iterator of cudeTypeArr[this.nowState]) {
+
+        }
+
     }
 
     move() {
@@ -97,6 +101,15 @@ export default class Cube extends cc.Component {
         }
 
     }
+
+    // getBotton() {
+    //     let item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
+    //     this.onBottom.splice(0);
+    //     for (const iterator of item) {
+
+    //     }
+    // }
+
 }
 
 export class CubeData {
