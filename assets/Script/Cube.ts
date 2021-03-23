@@ -5,17 +5,60 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Cube extends cc.Component {
-    /**当前方块最下面的坐标 */
-    onBottom: CubeData[];
+    // /**当前方块最下面的坐标 */
+    // onBottom: CubeData[];
     /**哪个类型的方块 */
     index: number;
     speed: number = 1;
-    pos: cc.Vec2[] = [];
+
+    /**中心块的坐标 */
+    centrePos: cc.Vec2;
+    /**所有块的坐标 相对于大场景 */
+    allPos: cc.Vec2[] = [];
     /**当前第几个状态--用来转换身份 */
     private nowState: number;
 
+    // 下落的缓动
+    private _dropTween: cc.Tween;
+
     onLoad() {
     }
+
+    start() {
+    }
+
+
+    public set dropStatus(v: boolean) {
+        if (v) {
+            if (!this._dropTween) {
+                let self = this;
+                this._dropTween = cc.tween(this.node)
+                    .repeatForever(
+                        cc.tween(this.node)
+                            .delay(1)
+                            .by(0, { y: -Config.cubeSize })
+                            .call(() => {
+                                for (let i = 0; i < self.allPos.length; i++) {
+                                    const pos = self.allPos[i];
+                                    pos.y--;
+                                }
+                                if (self.getBotton()[0].y == -(Config.cubeRow - 2)) {
+                                    self.dropStatus = false;
+                                }
+                            })
+                    )
+                    .start();
+            }
+        } else {
+            this._dropTween.stop();
+            this._dropTween = null;
+        }
+    }
+    /**获取当前快是否在下落 */
+    public get dropStatus() {
+        return this._dropTween ? true : false;
+    }
+
 
     /**初始化当前快 */
     init(index: number) {
@@ -24,18 +67,41 @@ export default class Cube extends cc.Component {
         this.node.x = DataManager.instance.startPoint.x;
         this.node.y = DataManager.instance.startPoint.y;
 
-        this.onBottom = [];
         this.speed = 1;
-        this.pos = [];
+        this.allPos = [];
 
         this.setCube(true);
     }
 
     /**
      * 设置方块
+     * @param init 当前的块第一次被生成
      */
     private setCube(init = false) {
-        let item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
+        let item: CubeData[]
+        if (this.index > -1) {
+            item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
+        } else {
+            item = [new CubeData(0, 0)];
+            let oneNode: cc.Node;
+            for (let i = 1; i < 3; i++) {
+                oneNode = this.node.getChildByName('Splash' + i);
+                oneNode && this.node.removeChild(oneNode);
+            }
+        }
+        this.allPos.splice(0);
+
+        if (init) {
+            let endPosY: number = -5;
+            for (let i = 0; i < item.length; i++) {
+                const cubeData = item[i];
+                if (endPosY < cubeData.y) {
+                    endPosY = cubeData.y;
+                }
+            }
+            this.centrePos = new cc.Vec2(0, endPosY);
+        }
+
         let oneNode: cc.Node;
         for (let i = 0; i < item.length; i++) {
             const element = item[i];
@@ -55,18 +121,9 @@ export default class Cube extends cc.Component {
             } else {
                 oneNode.x = element.x * Config.cubeSize;
                 oneNode.y = element.y * Config.cubeSize;
+                this.allPos.push(new cc.Vec2(this.centrePos.x + element.x, this.centrePos.y + element.y))
             }
         }
-    }
-
-    start() {
-        cc.tween(this.node)
-            .repeatForever(
-                cc.tween(this.node)
-                    .delay(1)
-                    .by(0.5, { y: -Config.cubeSize })
-            )
-            .start();
     }
 
     /**改变形状 */
@@ -77,38 +134,68 @@ export default class Cube extends cc.Component {
             this.nowState = 0;
         }
         this.setCube();
-        console.log('发生改变', this.index, this.nowState);
-
         for (const iterator of cudeTypeArr[this.nowState]) {
 
         }
-
     }
 
-    move() {
-        cc.tween(this.node)
-            .delay(1)
-            .by(0.5, { y: -Config.cubeSize })
+    move(left: boolean) {
+        this._dropTween.stop();
+        if (!this.canMoveLeftOrRight(left)) return;
+        if (left) {
+            cc.tween(this.node)
+                .to(0, { x: this.node.x - Config.cubeSize })
+                .call(() => {
+                    this._dropTween.start();
+                }, this)
+                .start();
+        } else {
+            cc.tween(this.node)
+                .to(0, { x: this.node.x + Config.cubeSize })
+                .call(() => {
+                    this._dropTween.start();
+                }, this)
+                .start();
+        }
     }
 
-    update() {
-        if (0) {
+    /**计算是否可以左右移动 */
+    private canMoveLeftOrRight(left: boolean): boolean {
+        // TODO 左右移动的判断
+        if (left) {
 
-            this.node.y -= Config.cubeSize;
         } else {
 
-            DataManager.instance.isHasCube.push()
         }
-
+        return;
     }
 
-    // getBotton() {
-    //     let item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
-    //     this.onBottom.splice(0);
-    //     for (const iterator of item) {
-
+    // update() {
+    //     if (0) {
+    //         this.node.y -= Config.cubeSize;
+    //     } else {
+    //         DataManager.instance.isHasCube.push()
     //     }
+
     // }
+
+    /**最下面快的相对于当前快的位置 */
+    getBotton() {
+        let arr: cc.Vec2[] = [];
+        let bottomY = 0;
+        for (const iterator of this.allPos) {
+            if (iterator.y < bottomY) {
+                bottomY = iterator.y;
+            }
+        }
+        for (let i = 0; i < this.allPos.length; i++) {
+            const element = this.allPos[i];
+            if (element.y == bottomY) {
+                arr.push(element)
+            }
+        }
+        return arr;
+    }
 
 }
 

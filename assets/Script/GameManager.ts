@@ -69,6 +69,7 @@ export default class GameManager extends cc.Component {
         this.gameScene.addChild(cubeGroup);
         this.cubeScript = cubeGroup.getComponent(Cube);
         this.cubeScript.init(0);
+        this.cubeScript.dropStatus = true;
     }
 
     /**点击开始按钮 */
@@ -84,10 +85,10 @@ export default class GameManager extends cc.Component {
     }
 
     onBtnLeft() {
-
+        this.cubeScript.move(true);
     }
     onBtnRight() {
-
+        this.cubeScript.move(false);
     }
     onChange() {
         this.cubeScript.change();
