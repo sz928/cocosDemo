@@ -1,6 +1,7 @@
 import Config from "./Config";
 import Cube from "./Cube";
 import DataManager from "./DataManager";
+import { EventManager } from "./EventManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -14,14 +15,18 @@ export default class GameManager extends cc.Component {
     canvas: cc.Canvas = null;
 
     @property({ type: cc.Prefab, tooltip: '下落的方块' })
-    cubeGroup: cc.Prefab;
+    cubeGroupPrefab: cc.Prefab;
 
     private menuScene: cc.Node;
     private gameScene: cc.Node;
 
     private cubeScript: Cube;
 
+    static readonly Event_FallToGround = 'Event_FallToGround';
+
     onLoad() {
+        EventManager.ins.on(GameManager.Event_FallToGround, this.fallToGround, this);
+
         this.menuScene = this.canvas.node.getChildByName("Menu");
         this.gameScene = this.canvas.node.getChildByName("Game");
         this.gameScene.active = true;
@@ -65,9 +70,11 @@ export default class GameManager extends cc.Component {
     /**创建一个下落的方块 */
     private createCube() {
         let index = Math.floor(Math.random() * 5);
-        let cubeGroup = cc.instantiate(this.cubeGroup);
-        this.gameScene.addChild(cubeGroup);
-        this.cubeScript = cubeGroup.getComponent(Cube);
+        if (!this.cubeScript) {
+            let cubeGroup = cc.instantiate(this.cubeGroupPrefab);
+            this.gameScene.addChild(cubeGroup);
+            this.cubeScript = cubeGroup.getComponent(Cube);
+        }
         this.cubeScript.init(0);
         this.cubeScript.dropStatus = true;
     }
@@ -92,6 +99,27 @@ export default class GameManager extends cc.Component {
     }
     onChange() {
         this.cubeScript.change();
+    }
+
+    /**当有方块已经落地 */
+    private fallToGround(allPos: cc.Vec2[]) {
+        let arr = DataManager.instance.isHasCube;
+        arr = arr.concat(allPos);
+
+        for (let i = 0; i < allPos.length; i++) {
+            const pos = allPos[i];
+            let cubeGroup = cc.instantiate(this.cubeGroupPrefab);
+            this.gameScene.addChild(cubeGroup);
+            let cube = cubeGroup.getComponent(Cube);
+            cube.initStaticCube(pos);
+            console.log('对方是否', cube.node.childrenCount);
+
+        }
+        console.log('阿真实性', allPos);
+
+
+
+        this.createCube();
     }
 
 }

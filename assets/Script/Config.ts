@@ -8,11 +8,16 @@ export default class Config {
     /**列数 */
     static cubeLine = 12;
 
+    /**左右两边最大的移动距离 */
+    get differLeftRight() {
+        return (Config.cubeLine - 2) >> 1;
+    }
+
     cubeArr: OneCubeMode[];
 
-    private static _instance:Config;
+    private static _instance: Config;
     static get instance() {
-        if(!this._instance){
+        if (!this._instance) {
             this._instance = new Config();
         }
         return this._instance;

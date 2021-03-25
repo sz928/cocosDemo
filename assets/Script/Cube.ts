@@ -1,5 +1,7 @@
 import Config from "./Config";
 import DataManager from "./DataManager";
+import { EventManager } from "./EventManager";
+import GameManager from "./GameManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -22,7 +24,6 @@ export default class Cube extends cc.Component {
     private _dropTween: cc.Tween;
     /**当前正在转换 */
     private isChange = false;
-
 
     public set dropStatus(v: boolean) {
         if (v) {
@@ -49,8 +50,26 @@ export default class Cube extends cc.Component {
         return this._dropTween ? true : false;
     }
 
+    /**初始化当前快--当前块为静止块 */
+    initStaticCube(endPos: cc.Vec2) {
+        let nodeWhite: cc.Node;
+        for (let i = 0; i < this.node.childrenCount; i++) {
+            let oneNode = this.node.getChildByName('Splash' + i);
+            if (!nodeWhite) {
+                oneNode && this.node.removeChild(oneNode);
+            } else {
+                nodeWhite = oneNode;
+            }
+        }
+        nodeWhite.x = 0;
+        nodeWhite.y = 0;
+        nodeWhite.width = nodeWhite.height = Config.cubeSize;
 
-    /**初始化当前快 */
+        this.node.x = DataManager.instance.startPoint.x + endPos.x * Config.cubeSize;
+        this.node.y = DataManager.instance.startPoint.y + endPos.y * Config.cubeSize;
+    }
+
+    /**初始化当前快--当前块为下落块 */
     init(index: number) {
         this.nowState = 0;
         this.index = index;
@@ -60,25 +79,15 @@ export default class Cube extends cc.Component {
         this.speed = 1;
         this.allPos = [];
 
-        this.setCube(true);
+        this.updateCube(true);
     }
 
     /**
-     * 设置方块
+     * 设置会动的方块
      * @param init 当前的块第一次被生成
      */
-    private setCube(init = false) {
-        let item: CubeData[]
-        if (this.index > -1) {
-            item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
-        } else {
-            item = [new CubeData(0, 0)];
-            let oneNode: cc.Node;
-            for (let i = 1; i < 3; i++) {
-                oneNode = this.node.getChildByName('Splash' + i);
-                oneNode && this.node.removeChild(oneNode);
-            }
-        }
+    private updateCube(init = false) {
+        let item = Config.instance.cubeArr[this.index].cudeType[this.nowState];
         if (init) {
             let endPosY: number = -5;
             for (let i = 0; i < item.length; i++) {
@@ -133,9 +142,15 @@ export default class Cube extends cc.Component {
         if (this.nowState > cudeTypeArr.length - 1) {
             this.nowState = 0;
         }
-        this.setCube();
-        for (const iterator of cudeTypeArr[this.nowState]) {
+        this.updateCube();
+        let differ = Config.instance.differLeftRight;
 
+        if (this.getLeftX() < -differ) {
+            this.node.x += Config.cubeSize;
+            this.moveRight();
+        } else if (this.getRightX() > differ) {
+            this.node.x -= Config.cubeSize;
+            this.moveLeft();
         }
     }
 
@@ -163,32 +178,39 @@ export default class Cube extends cc.Component {
 
     /**计算是否可以左右移动 */
     private canMoveLeftOrRight(left: boolean): boolean {
-        let differ = (Config.cubeLine - 2) >> 1;
-        let leftRightX = null;
+        let differ = Config.instance.differLeftRight;
         if (left) {
-            for (let i = 0; i < this.allPos.length; i++) {
-                const pos = this.allPos[i];
-                if (leftRightX == null || pos.x < leftRightX) leftRightX = pos.x;
-            }
-            return (leftRightX-- > -differ)
+            let leftX = this.getLeftX();
+            return (leftX-- > -differ);
         } else {
-            for (let i = 0; i < this.allPos.length; i++) {
-                const pos = this.allPos[i];
-                if (leftRightX == null || pos.x > leftRightX) leftRightX = pos.x;
-            }
-            return (leftRightX++ < differ)
+            let rightX = this.getRightX();
+            return (rightX++ < differ);
         }
+    }
+
+    /**获取最右边的块的X */
+    private getRightX() {
+        let leftRightX: number = null;
+        for (let i = 0; i < this.allPos.length; i++) {
+            const pos = this.allPos[i];
+            if (leftRightX == null || pos.x > leftRightX) leftRightX = pos.x;
+        }
+        return leftRightX;
+    }
+    /**获取最左边的块的X */
+    private getLeftX(): number {
+        let leftRightX: number = null;
+        for (let i = 0; i < this.allPos.length; i++) {
+            const pos = this.allPos[i];
+            if (leftRightX == null || pos.x < leftRightX) leftRightX = pos.x;
+        }
+        return leftRightX;
     }
 
     /**安全落地(当前块停止了) */
     private fallToGround() {
-        this._dropTween.stop();
-        // if (0) {
-        //     this.node.y -= Config.cubeSize;
-        // } else {
-        //     DataManager.instance.isHasCube.push()
-        // }
-
+        this.dropStatus = false;
+        EventManager.ins.dispatchEvent(GameManager.Event_FallToGround, this.allPos);
     }
 
     private moveLeft() {
@@ -209,7 +231,7 @@ export default class Cube extends cc.Component {
             pos.y--;
         }
         this.centrePos.y--;
-        if (this.getBotton()[0].y == -(Config.cubeRow - 2)) {
+        if (this.getBotton()[0].y == -(Config.cubeRow - 1)) {
             this.fallToGround();
         }
     }
