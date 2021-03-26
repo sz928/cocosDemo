@@ -75,7 +75,8 @@ export default class GameManager extends cc.Component {
             this.gameScene.addChild(cubeGroup);
             this.cubeScript = cubeGroup.getComponent(Cube);
         }
-        this.cubeScript.init(0);
+
+        this.cubeScript.init(index);
         this.cubeScript.dropStatus = true;
     }
 
@@ -104,19 +105,58 @@ export default class GameManager extends cc.Component {
     /**当有方块已经落地 */
     private fallToGround(allPos: cc.Vec2[]) {
         let arr = DataManager.instance.isHasCube;
-        arr = arr.concat(allPos);
+        DataManager.instance.isHasCube = arr.concat(allPos);
 
         for (let i = 0; i < allPos.length; i++) {
             const pos = allPos[i];
             let cubeGroup = cc.instantiate(this.cubeGroupPrefab);
+            cubeGroup.name = "fixedCub" + pos.x + "" + pos.y;
             this.gameScene.addChild(cubeGroup);
+            DataManager.instance.fixedCube.set((pos.x + '' + pos.y), cubeGroup);
             let cube = cubeGroup.getComponent(Cube);
             cube.initStaticCube(pos);
-            console.log('对方是否', cube.node.childrenCount);
-
         }
-        console.log('阿真实性', allPos);
 
+        let mapY: Map<number, number[]> = new Map();
+        for (const pos of DataManager.instance.isHasCube) {
+            let data = mapY.get(pos.y);
+            data ? data.push(pos.x) : mapY.set(pos.y, [pos.x]);
+        }
+        if (mapY.has(1)) {
+            alert('游戏结束!');
+            return;
+        }
+
+        let startY: number = null;
+        let downCount: number = 0;
+        for (const [key, value] of mapY) {
+            if (value.length >= Config.cubeLine - 1) {
+                for (let i = 0; i < value.length; i++) {
+                    downCount++;
+                    if (startY == null) startY = key;
+                    const element = value[i];
+                    let oneNode = DataManager.instance.fixedCube.get(element + '' + key);
+                    this.gameScene.removeChild(oneNode);
+
+                    for (let i = 0; i < DataManager.instance.isHasCube.length; i++) {
+                        const cubeData = DataManager.instance.isHasCube[i];
+                        if (element == cubeData.x && key == cubeData.y) {
+                            DataManager.instance.isHasCube.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (const item of this.gameScene.children) {
+            if (item.name.indexOf('fixedCub') == -1) continue;
+            // let cube = item.getComponent(Cube);
+            // TODO 整体下落
+            if (item.y < startY) {
+                item.y += downCount * Config.cubeSize;
+            }
+        }
 
 
         this.createCube();

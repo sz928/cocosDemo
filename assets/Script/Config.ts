@@ -81,7 +81,7 @@ export default class Config {
             [
                 new CubeData(0, 0),
                 new CubeData(1, 0),
-                new CubeData(1, 0),
+                new CubeData(1, 1),
                 new CubeData(0, 1)
             ]
         ];

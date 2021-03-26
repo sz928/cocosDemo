@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
+    "downlevelIteration": true,
     "module": "commonjs",
-    "lib": [ "es2015", "es2017", "dom" ],
+    "lib": ["es2015", "es2017", "dom"],
     "target": "es5",
     "experimentalDecorators": true,
     "skipLibCheck": true,

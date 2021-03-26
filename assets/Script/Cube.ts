@@ -7,8 +7,6 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Cube extends cc.Component {
-    // /**当前方块最下面的坐标 */
-    // onBottom: CubeData[];
     /**哪个类型的方块 */
     index: number;
     speed: number = 1;
@@ -35,7 +33,7 @@ export default class Cube extends cc.Component {
                             .delay(1)
                             .by(0, { y: -Config.cubeSize })
                             .call(() => {
-                                self.moveDown();
+                                self.moveDownStart();
                             })
                     )
                     .start();
@@ -52,15 +50,17 @@ export default class Cube extends cc.Component {
 
     /**初始化当前快--当前块为静止块 */
     initStaticCube(endPos: cc.Vec2) {
-        let nodeWhite: cc.Node;
-        for (let i = 0; i < this.node.childrenCount; i++) {
-            let oneNode = this.node.getChildByName('Splash' + i);
-            if (!nodeWhite) {
-                oneNode && this.node.removeChild(oneNode);
+        let nodeWhite: cc.Node = null;
+        for (let i = 0, oneNode: cc.Node; i < this.node.childrenCount; i++) {
+            oneNode = this.node.children[i];
+            if (nodeWhite) {
+                this.node.removeChild(oneNode);
+                i--;
             } else {
                 nodeWhite = oneNode;
             }
         }
+
         nodeWhite.x = 0;
         nodeWhite.y = 0;
         nodeWhite.width = nodeWhite.height = Config.cubeSize;
@@ -145,12 +145,15 @@ export default class Cube extends cc.Component {
         this.updateCube();
         let differ = Config.instance.differLeftRight;
 
+        let moveCount: number = 0;
         if (this.getLeftX() < -differ) {
-            this.node.x += Config.cubeSize;
-            this.moveRight();
+            moveCount = Math.abs(-differ - this.getLeftX());
+            this.node.x += Config.cubeSize * moveCount;
+            this.moveRightEnd(moveCount);
         } else if (this.getRightX() > differ) {
-            this.node.x -= Config.cubeSize;
-            this.moveLeft();
+            moveCount = Math.abs(this.getRightX() - differ);
+            this.node.x -= Config.cubeSize * moveCount;
+            this.moveLeftEnd(moveCount);
         }
     }
 
@@ -162,7 +165,7 @@ export default class Cube extends cc.Component {
                 .by(0, { x: -Config.cubeSize })
                 .call(() => {
                     this._dropTween.start();
-                    this.moveLeft();
+                    this.moveLeftEnd();
                 }, this)
                 .start();
         } else {
@@ -170,7 +173,7 @@ export default class Cube extends cc.Component {
                 .by(0, { x: Config.cubeSize })
                 .call(() => {
                     this._dropTween.start();
-                    this.moveRight();
+                    this.moveRightEnd();
                 }, this)
                 .start();
         }
@@ -179,13 +182,37 @@ export default class Cube extends cc.Component {
     /**计算是否可以左右移动 */
     private canMoveLeftOrRight(left: boolean): boolean {
         let differ = Config.instance.differLeftRight;
+        let canMove = true;
+        // 判断左右边界
         if (left) {
             let leftX = this.getLeftX();
-            return (leftX-- > -differ);
+            canMove = (leftX-- > -differ);
         } else {
             let rightX = this.getRightX();
-            return (rightX++ < differ);
+            canMove = (rightX++ < differ);
         }
+        if (!canMove) return canMove;
+        // 判断固定块
+        let arr = DataManager.instance.isHasCube;
+        if (left) {
+            for (let hasPos of arr) {
+                for (let pos of this.allPos) {
+                    if (hasPos.y == pos.y && hasPos.x < pos.x - 1) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            for (let hasPos of arr) {
+                for (let pos of this.allPos) {
+                    if (hasPos.y == pos.y && hasPos.x > pos.x + 1) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return canMove;
     }
 
     /**获取最右边的块的X */
@@ -213,27 +240,40 @@ export default class Cube extends cc.Component {
         EventManager.ins.dispatchEvent(GameManager.Event_FallToGround, this.allPos);
     }
 
-    private moveLeft() {
+    private moveLeftEnd(count: number = 1) {
         for (let i = 0; i < this.allPos.length; i++) {
-            this.allPos[i].x--;
+            this.allPos[i].x -= count;
         }
-        this.centrePos.x--;
+        this.centrePos.x -= count;
     }
-    private moveRight() {
+    private moveRightEnd(count: number = 1) {
         for (let i = 0; i < this.allPos.length; i++) {
-            this.allPos[i].x++;
+            this.allPos[i].x += count;
         }
-        this.centrePos.x++;
+        this.centrePos.x += count;
     }
-    private moveDown() {
+    private moveDownStart() {
         for (let i = 0; i < this.allPos.length; i++) {
             const pos = this.allPos[i];
             pos.y--;
         }
         this.centrePos.y--;
-        if (this.getBotton()[0].y == -(Config.cubeRow - 1)) {
+        // 当前块最下面的坐标
+        let endAllPos = this.getBotton();
+        if (endAllPos[0].y == -(Config.cubeRow - 1) || this.checkCrash()) {
             this.fallToGround();
         }
+    }
+
+    /**对否和已经固定的发生碰撞 */
+    private checkCrash() {
+        let arr = DataManager.instance.isHasCube;
+        for (const pos of arr) {
+            for (const downPos of this.allPos) {
+                if (pos.y == downPos.y - 1 && pos.x == downPos.x) return true;
+            }
+        }
+        return false;
     }
 
     /**最下面快的相对于当前块的位置 */
