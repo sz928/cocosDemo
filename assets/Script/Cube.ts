@@ -67,6 +67,8 @@ export default class Cube extends cc.Component {
 
         this.node.x = DataManager.instance.startPoint.x + endPos.x * Config.cubeSize;
         this.node.y = DataManager.instance.startPoint.y + endPos.y * Config.cubeSize;
+
+        this.centrePos = endPos.clone();
     }
 
     /**初始化当前快--当前块为下落块 */

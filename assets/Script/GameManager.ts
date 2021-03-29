@@ -17,6 +17,9 @@ export default class GameManager extends cc.Component {
     @property({ type: cc.Prefab, tooltip: '下落的方块' })
     cubeGroupPrefab: cc.Prefab;
 
+    @property({ type: cc.Node, tooltip: '固定的方块' })
+    cubeMap: cc.Node;
+
     private menuScene: cc.Node;
     private gameScene: cc.Node;
 
@@ -29,16 +32,15 @@ export default class GameManager extends cc.Component {
 
         this.menuScene = this.canvas.node.getChildByName("Menu");
         this.gameScene = this.canvas.node.getChildByName("Game");
-        this.gameScene.active = true;
-        this.menuScene.active = false;
-
-        Config.instance.init();
-        DataManager.instance.init();
-
+        this.gameScene.active = false;
+        this.menuScene.active = true;
         this.iniBg();
     }
 
-    start() {
+    private newGame() {
+        Config.instance.init();
+        DataManager.instance.init();
+        this.cubeScript = null;
         this.createCube();
     }
 
@@ -72,7 +74,7 @@ export default class GameManager extends cc.Component {
         let index = Math.floor(Math.random() * 5);
         if (!this.cubeScript) {
             let cubeGroup = cc.instantiate(this.cubeGroupPrefab);
-            this.gameScene.addChild(cubeGroup);
+            this.cubeMap.addChild(cubeGroup);
             this.cubeScript = cubeGroup.getComponent(Cube);
         }
 
@@ -89,6 +91,9 @@ export default class GameManager extends cc.Component {
                 this.gameScene.active = true;
             })
             .to(0.6, { scale: this.canvas.node.scale, opacity: this.canvas.node.opacity })
+            .call(() => {
+                this.newGame();
+            }, this)
             .start()
     }
 
@@ -111,8 +116,7 @@ export default class GameManager extends cc.Component {
             const pos = allPos[i];
             let cubeGroup = cc.instantiate(this.cubeGroupPrefab);
             cubeGroup.name = "fixedCub" + pos.x + "" + pos.y;
-            this.gameScene.addChild(cubeGroup);
-            DataManager.instance.fixedCube.set((pos.x + '' + pos.y), cubeGroup);
+            this.cubeMap.addChild(cubeGroup);
             let cube = cubeGroup.getComponent(Cube);
             cube.initStaticCube(pos);
         }
@@ -123,38 +127,50 @@ export default class GameManager extends cc.Component {
             data ? data.push(pos.x) : mapY.set(pos.y, [pos.x]);
         }
         if (mapY.has(1)) {
-            alert('游戏结束!');
+            this.cubeMap.removeAllChildren();
+            this.menuScene.active = true;
+            this.gameScene.active = false;
             return;
         }
 
-        let startY: number = null;
-        let downCount: number = 0;
-        for (const [key, value] of mapY) {
+        for (const [posY, value] of mapY) {
             if (value.length >= Config.cubeLine - 1) {
                 for (let i = 0; i < value.length; i++) {
-                    downCount++;
-                    if (startY == null) startY = key;
                     const element = value[i];
-                    let oneNode = DataManager.instance.fixedCube.get(element + '' + key);
-                    this.gameScene.removeChild(oneNode);
+
+                    let delNodes: cc.Node[] = [];
+                    let moveNodes: cc.Node[] = [];
+                    for (const item of this.cubeMap.children) {
+                        if (item.name.indexOf('fixedCub') == -1) continue;
+                        let cube = item.getComponent(Cube);
+
+                        if (cube.centrePos.y == posY && cube.centrePos.x == element) {
+                            delNodes.push(item);
+                        } else if (cube.centrePos.x == element && cube.centrePos.y > posY) {
+                            moveNodes.push(item);
+                        }
+                    }
 
                     for (let i = 0; i < DataManager.instance.isHasCube.length; i++) {
                         const cubeData = DataManager.instance.isHasCube[i];
-                        if (element == cubeData.x && key == cubeData.y) {
+                        if (element == cubeData.x && posY == cubeData.y) {
                             DataManager.instance.isHasCube.splice(i, 1);
                             i--;
+                        } else if (element == cubeData.x && posY < cubeData.y) {
+                            cubeData.y--;
+                            DataManager.instance.isHasCube[i] = cubeData;
                         }
                     }
-                }
-            }
-        }
 
-        for (const item of this.gameScene.children) {
-            if (item.name.indexOf('fixedCub') == -1) continue;
-            // let cube = item.getComponent(Cube);
-            // TODO 整体下落
-            if (item.y < startY) {
-                item.y += downCount * Config.cubeSize;
+                    for (const delNode of delNodes) {
+                        this.cubeMap.removeChild(delNode);
+                    }
+                    for (const moveNode of moveNodes) {
+                        let cube = moveNode.getComponent(Cube);
+                        cube.centrePos.y--;
+                        moveNode.y -= Config.cubeSize;
+                    }
+                }
             }
         }
 

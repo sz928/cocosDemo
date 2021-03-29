@@ -17,7 +17,7 @@ export default class DataManager {
     isHasCube: CubeData[] = [];
 
     /**已经固定的方块的对象 */
-    fixedCube: Map<string, cc.Node> = new Map();
+    // fixedCube: Map<string, cc.Node> = new Map();
 
     /**起点坐标 */
     startPoint: { x: number, y: number } = { x: 0, y: 0 };
