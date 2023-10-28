@@ -1,7 +1,6 @@
-import { CubeData } from "./Cube";
+import Cube, { CubeData } from "./Cube";
 
 export default class Config {
-    constructor() { }
 
     static cubeSize = 40;
     /**行数 */
@@ -9,30 +8,122 @@ export default class Config {
     /**列数 */
     static cubeLine = 12;
 
-    static cudeType: { x: number, y: number }[][] = [
-        [{ x: -1, y: 0 },
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 0, y: 1 }],
+    /**左右两边最大的移动距离 */
+    get differLeftRight() {
+        return (Config.cubeLine - 2) >> 1;
+    }
 
-        [{ x: -1, y: -1 },
-        { x: -1, y: 0 },
-        { x: 0, y: 0 },
-        { x: 1, y: 0 }],
+    cubeArr: OneCubeMode[];
 
-        [{ x: 0, y: 0 },
-        { x: 0, y: -1 },
-        { x: 1, y: 0 },
-        { x: 1, y: -1 }],
+    private static _instance: Config;
+    static get instance() {
+        if (!this._instance) {
+            this._instance = new Config();
+        }
+        return this._instance;
+    }
 
-        [{ x: 0, y: 0 },
-        { x: 0, y: -1 },
-        { x: 0, y: -2 },
-        { x: 0, y: -3 }],
+    init() {
+        this.cubeArr = [];
+        let cube1 = [
+            [
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(1, 0),
+                new CubeData(0, 1)
+            ],
+            [
+                new CubeData(0, 1),
+                new CubeData(0, 0),
+                new CubeData(0, -1),
+                new CubeData(1, 0)
+            ],
+            [
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(1, 0),
+                new CubeData(0, -1)
+            ],
+            [
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(0, 1),
+                new CubeData(0, -1)
+            ]
+        ];
+        let cube2 = [
+            [
+                new CubeData(-1, 1),
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(1, 0)
+            ],
+            [
+                new CubeData(0, 1),
+                new CubeData(1, 1),
+                new CubeData(0, 0),
+                new CubeData(0, -1)
+            ],
+            [
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(1, 0),
+                new CubeData(1, -1)
+            ],
+            [
+                new CubeData(0, 1),
+                new CubeData(0, 0),
+                new CubeData(0, -1),
+                new CubeData(-1, -1)
+            ]
+        ];
+        let cube3 = [
+            [
+                new CubeData(0, 0),
+                new CubeData(1, 0),
+                new CubeData(1, 1),
+                new CubeData(0, 1)
+            ]
+        ];
+        let cube4 = [
+            [
+                new CubeData(0, 1),
+                new CubeData(0, 0),
+                new CubeData(0, -1),
+                new CubeData(0, -2)
+            ],
+            [
+                new CubeData(-2, 0),
+                new CubeData(-1, 0),
+                new CubeData(0, 0),
+                new CubeData(1, 0)
+            ]
+        ];
+        let cube5 = [
+            [
+                new CubeData(-1, 1),
+                new CubeData(0, 1),
+                new CubeData(0, 0),
+                new CubeData(1, 0)
+            ],
+            [
+                new CubeData(1, 1),
+                new CubeData(0, 0),
+                new CubeData(1, 0),
+                new CubeData(0, -1)
+            ]
+        ];
+        this.cubeArr.push(new OneCubeMode(cube1));
+        this.cubeArr.push(new OneCubeMode(cube2));
+        this.cubeArr.push(new OneCubeMode(cube3));
+        this.cubeArr.push(new OneCubeMode(cube4));
+        this.cubeArr.push(new OneCubeMode(cube5));
+    }
+}
 
-        [{ x: -1, y: -1 },
-        { x: 0, y: -1 },
-        { x: 0, y: 0 },
-        { x: 1, y: 0 }]
-    ]
+export class OneCubeMode {
+    cudeType: CubeData[][] = [];
+    constructor(data: CubeData[][]) {
+        this.cudeType = data;
+    }
 }
