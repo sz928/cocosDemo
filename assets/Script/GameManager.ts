@@ -22,8 +22,8 @@ export default class GameManager extends cc.Component {
     onLoad() {
         this.menuScene = this.canvas.node.getChildByName("Menu");
         this.gameScene = this.canvas.node.getChildByName("Game");
-        this.gameScene.active = true;
-        this.menuScene.active = false;
+        this.gameScene.active = false;
+        this.menuScene.active = true;
 
         DataManager.instance.init();
 
